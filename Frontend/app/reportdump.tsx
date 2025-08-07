@@ -2,7 +2,7 @@ import { FontAwesome5, MaterialCommunityIcons, MaterialIcons } from '@expo/vecto
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View, ActivityIndicator, Modal } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import * as FileSystem from 'expo-file-system';
 import * as Location from 'expo-location';
@@ -64,6 +64,8 @@ export default function ReportForm() {
 
   const router = useRouter();
 
+  const [modalVisible, setModalVisible] = useState(false);
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -114,18 +116,7 @@ export default function ReportForm() {
 
 
   const handleSubmit = async () => {
-    if (!selectedAccessibility || !selectedTrashType || !selectedTrashSize) {
-      Alert.alert('Error', 'Please complete all required fields.');
-      return;
-    }
-    if (!photoUri) {
-      Alert.alert('Error', 'Please add a photo.');
-      return;
-    }
-    if (latitude == null || longitude == null) {
-      Alert.alert('Error', 'Location not available.');
-      return;
-    }
+    setModalVisible(true); // Always show modal immediately
     try {
       const apiUrl = 'http://172.20.10.2:8081/api/dumps/report/image'; // Update to your backend IP if needed
       const formData = new FormData();
@@ -135,14 +126,15 @@ export default function ReportForm() {
       formData.append('location', location);
       formData.append('latitude', String(latitude));
       formData.append('longitude', String(longitude));
-      // Convert image URI to file for upload
-      const fileName = photoUri.split('/').pop() || `photo.jpg`;
-      const fileType = fileName.endsWith('.png') ? 'image/png' : 'image/jpeg';
-      formData.append('image', {
-        uri: photoUri,
-        name: fileName,
-        type: fileType,
-      } as any); // Cast as any for React Native FormData compatibility
+      if (photoUri) {
+        const fileName = photoUri.split('/').pop() || `photo.jpg`;
+        const fileType = fileName.endsWith('.png') ? 'image/png' : 'image/jpeg';
+        formData.append('image', {
+          uri: photoUri,
+          name: fileName,
+          type: fileType,
+        } as any);
+      }
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -150,22 +142,16 @@ export default function ReportForm() {
         },
         body: formData,
       });
-      if (response.ok) {
-        Alert.alert('Thank You!', 'Your trash report has been submitted.', [{
-          text: 'Ok',
-          onPress: () => router.replace('/thankscreen'),
-          style: 'default',
-        }], { cancelable: false });
-        setName('');
-        setLocation('');
-        setSelectedTrashType(null);
-        setSelectedTrashSize(null);
-        setNotes('');
-        setSelectedAccessibility({});
-      } else {
+      if (!response.ok) {
         const msg = await response.text();
         Alert.alert('Error', msg || 'Failed to submit report.');
       }
+      setName('');
+      setLocation('');
+      setSelectedTrashType(null);
+      setSelectedTrashSize(null);
+      setNotes('');
+      setSelectedAccessibility({});
     } catch (err) {
       Alert.alert('Error', 'Failed to submit report.');
     }
@@ -181,6 +167,32 @@ export default function ReportForm() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1, backgroundColor: '#F6F8FB' }}
     >
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setModalVisible(false);
+          router.replace('/home');
+        }}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+          <View style={{ backgroundColor: '#fff', padding: 32, borderRadius: 16, alignItems: 'center', minWidth: 250 }}>
+            <MaterialCommunityIcons name="check-circle" size={48} color="#4CC075" style={{ marginBottom: 12 }} />
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}>Submitted successfully</Text>
+            <Text style={{ fontSize: 16, color: '#555', marginBottom: 20, textAlign: 'center' }}>Your trash report has been submitted.</Text>
+            <TouchableOpacity
+              style={{ backgroundColor: '#4CC075', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 }}
+              onPress={() => {
+                setModalVisible(false);
+                router.replace('/home');
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <ScrollView contentContainerStyle={{ padding: 0, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Photo Card */}
         <View style={styles.card}>

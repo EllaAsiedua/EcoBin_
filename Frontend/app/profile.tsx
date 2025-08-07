@@ -1,120 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { TextInput, Button } from 'react-native-paper';
 
-const API_URL = 'http://172.20.10.2:8081/api/user/me'; // Use your backend IP
+const dummyProfile = {
+  name: 'Umar',
+  email: 'umar@example.com',
+  walletAddress: '0x1234...abcd',
+  roles: ['User', 'Recycler'],
+  avatar: require('../assets/images/greencycle.png'),
+  achievements: [
+    { id: 1, title: 'Top 5 on Leaderboard', desc: 'You are ranked #4 this week!' },
+    { id: 2, title: 'Most Reports', desc: 'Reported 12 dumps this month.' },
+    { id: 3, title: 'Adopted Spots', desc: 'Adopted 3 locations.' },
+  ],
+};
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [name, setName] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProfile = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(API_URL, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-        setName(data.name);
-      } else {
-        setError('Failed to load profile');
-      }
-    } catch (e) {
-      setError('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(API_URL, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-        setEditMode(false);
-        Alert.alert('Profile updated!');
-      } else {
-        setError('Failed to update profile');
-      }
-    } catch (e) {
-      setError('Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F6F8FB', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#4CC075" />
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F6F8FB', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>{error}</Text>
-        <Button onPress={fetchProfile} mode="contained" style={{ marginTop: 16 }}>Retry</Button>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#F6F8FB' }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={styles.header}>
-          <Image source={require('../assets/images/greencycle.png')} style={styles.avatar} />
-          {editMode ? (
-            <TextInput
-              style={styles.nameInput}
-              value={name}
-              onChangeText={setName}
-              mode="outlined"
-              theme={{ colors: { primary: '#4CC075' } }}
-              disabled={saving}
-            />
-          ) : (
-            <Text style={styles.name}>{profile.name}</Text>
-          )}
-          <Text style={styles.email}>{profile.email}</Text>
-          <Text style={styles.wallet}>Wallet: <Text style={{ color: '#4CC075', fontWeight: '700' }}>{profile.walletAddress}</Text></Text>
-          <Text style={styles.roles}>Roles: {Array.isArray(profile.roles) ? profile.roles.join(', ') : profile.roles}</Text>
-          {editMode ? (
-            <View style={styles.editRow}>
-              <Button mode="contained" onPress={handleSave} loading={saving} disabled={saving} style={styles.saveBtn}>Save</Button>
-              <Button mode="outlined" onPress={() => setEditMode(false)} disabled={saving} style={styles.cancelBtn}>Cancel</Button>
+        <View style={styles.card}>
+          <Image source={dummyProfile.avatar} style={styles.avatar} />
+          <Text style={styles.name}>{dummyProfile.name}</Text>
+          <Text style={styles.email}>{dummyProfile.email}</Text>
+          <Text style={styles.wallet}>Wallet: <Text style={{ color: '#4CC075', fontWeight: '700' }}>{dummyProfile.walletAddress}</Text></Text>
+          <Text style={styles.roles}>Roles: {dummyProfile.roles.join(', ')}</Text>
+        </View>
+        <View style={styles.achievementsCard}>
+          <Text style={styles.achievementsHeader}>Leaderboard Achievements</Text>
+          {dummyProfile.achievements.map(a => (
+            <View key={a.id} style={styles.achievementRow}>
+              <View style={styles.achievementDot} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.achievementTitle}>{a.title}</Text>
+                <Text style={styles.achievementDesc}>{a.desc}</Text>
+              </View>
             </View>
-          ) : (
-            <TouchableOpacity style={styles.actionBtn} onPress={() => setEditMode(true)}>
-              <Text style={styles.actionText}>Edit Profile</Text>
-            </TouchableOpacity>
-          )}
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -122,11 +44,12 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  card: {
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 24,
     margin: 18,
+    marginTop: 32,
     padding: 24,
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -134,25 +57,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginBottom: 12,
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#222',
     marginBottom: 4,
-  },
-  nameInput: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 4,
-    width: 200,
-    alignSelf: 'center',
-    backgroundColor: '#F6F8FB',
   },
   email: {
     fontSize: 16,
@@ -169,29 +83,45 @@ const styles = StyleSheet.create({
     color: '#4CC075',
     marginBottom: 10,
   },
-  actionBtn: {
-    backgroundColor: '#4CC075',
-    borderRadius: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    marginTop: 12,
+  achievementsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    marginHorizontal: 18,
+    marginTop: 8,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  actionText: {
-    color: '#fff',
+  achievementsHeader: {
+    fontSize: 20,
     fontWeight: '700',
-    fontSize: 16,
+    color: '#4CC075',
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  editRow: {
+  achievementRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-    gap: 10,
+    alignItems: 'center',
+    marginBottom: 14,
   },
-  saveBtn: {
-    marginRight: 8,
+  achievementDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#4CC075',
+    marginRight: 12,
   },
-  cancelBtn: {
-    borderColor: '#4CC075',
+  achievementTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222',
+  },
+  achievementDesc: {
+    fontSize: 13,
+    color: '#888',
+    fontWeight: '400',
+    marginTop: 1,
   },
 }); 

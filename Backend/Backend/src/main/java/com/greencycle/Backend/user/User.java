@@ -35,25 +35,6 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Leaderboard scoring fields
-    @Column(name = "total_score", nullable = false)
-    private Integer totalScore = 0;
-
-    @Column(name = "dumps_reported", nullable = false)
-    private Integer dumpsReported = 0;
-
-    @Column(name = "spots_adopted", nullable = false)
-    private Integer spotsAdopted = 0;
-
-    @Column(name = "marketplace_sales", nullable = false)
-    private Integer marketplaceSales = 0;
-
-    @Column(name = "cleanup_sessions", nullable = false)
-    private Integer cleanupSessions = 0;
-
-    @Column(name = "cycle_tokens_earned", nullable = false)
-    private Integer cycleTokensEarned = 0;
-
     public User() {}
 
     // Getters and setters
@@ -80,58 +61,4 @@ public class User {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    // Leaderboard scoring getters and setters
-    public Integer getTotalScore() { return totalScore; }
-    public void setTotalScore(Integer totalScore) { this.totalScore = totalScore; }
-
-    public Integer getDumpsReported() { return dumpsReported; }
-    public void setDumpsReported(Integer dumpsReported) { this.dumpsReported = dumpsReported; }
-
-    public Integer getSpotsAdopted() { return spotsAdopted; }
-    public void setSpotsAdopted(Integer spotsAdopted) { this.spotsAdopted = spotsAdopted; }
-
-    public Integer getMarketplaceSales() { return marketplaceSales; }
-    public void setMarketplaceSales(Integer marketplaceSales) { this.marketplaceSales = marketplaceSales; }
-
-    public Integer getCleanupSessions() { return cleanupSessions; }
-    public void setCleanupSessions(Integer cleanupSessions) { this.cleanupSessions = cleanupSessions; }
-
-    public Integer getCycleTokensEarned() { return cycleTokensEarned; }
-    public void setCycleTokensEarned(Integer cycleTokensEarned) { this.cycleTokensEarned = cycleTokensEarned; }
-
-    // Method to calculate total score based on activities
-    public void calculateTotalScore() {
-        this.totalScore = (dumpsReported * 10) + 
-                         (spotsAdopted * 25) + 
-                         (marketplaceSales * 5) + 
-                         (cleanupSessions * 50) + 
-                         (cycleTokensEarned * 2);
-    }
-
-    // Method to add points for different activities
-    public void addDumpReport() {
-        this.dumpsReported++;
-        calculateTotalScore();
-    }
-
-    public void addSpotAdopted() {
-        this.spotsAdopted++;
-        calculateTotalScore();
-    }
-
-    public void addMarketplaceSale() {
-        this.marketplaceSales++;
-        calculateTotalScore();
-    }
-
-    public void addCleanupSession() {
-        this.cleanupSessions++;
-        calculateTotalScore();
-    }
-
-    public void addCycleTokens(Integer tokens) {
-        this.cycleTokensEarned += tokens;
-        calculateTotalScore();
-    }
 } 

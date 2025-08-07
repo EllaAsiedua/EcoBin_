@@ -32,6 +32,15 @@ export default function FavoritesCard() {
             <TouchableOpacity style={styles.addCard} onPress={handleAddAdoptSpot}>
               <Text style={styles.plus}>+</Text>
             </TouchableOpacity>
+          ) : item.title === 'Marketplace' ? (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.favCard, { backgroundColor: item.color }]}
+              onPress={() => router.push('/marketplace')}
+            >
+              <Text style={styles.favTitle}>{item.title}</Text>
+              <Text style={styles.favSubtitle}>{item.subtitle}</Text>
+            </TouchableOpacity>
           ) : (
             <View key={item.id} style={[styles.favCard, { backgroundColor: item.color }] }>
               <Text style={styles.favTitle}>{item.title}</Text>

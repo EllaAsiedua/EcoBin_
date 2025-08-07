@@ -6,6 +6,7 @@ import CustomFAB from '../components/CustomFAB';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 type DumpReport = {
   id: number;
@@ -20,14 +21,13 @@ type DumpReport = {
 };
 
 export default function AdoptScreen() {
+  const router = useRouter();
   const [dumps, setDumps] = useState<DumpReport[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
   const [modalDump, setModalDump] = useState<DumpReport | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [closeAnim] = useState(new Animated.Value(1));
-  // Replace showDumps and showAnim with dumpsExpanded and animValue
-  const [dumpsExpanded, setDumpsExpanded] = useState(true);
-  const animValue = useRef(new Animated.Value(1)).current; // 1 = expanded, 0 = collapsed
+  // Remove showDumps, showAnim, dumpsExpanded, animValue, and related logic
 
   useEffect(() => {
     // Fetch dumps
@@ -73,81 +73,44 @@ export default function AdoptScreen() {
     });
   };
 
-  const toggleDumpsSection = () => {
-    Animated.timing(animValue, {
-      toValue: dumpsExpanded ? 0 : 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setDumpsExpanded(!dumpsExpanded);
-    });
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: '#F6F8FB' }}>
-      <Text style={styles.header}>Adopt a Spot</Text>
-      <View style={styles.mapContainer}>
+      {/* Custom Header */}
+      <View style={{ paddingTop: 40, paddingHorizontal: 20, backgroundColor: '#fff', zIndex: 10 }}>
+        <Text style={{ fontSize: 24, fontWeight: '700', color: '#222', marginBottom: 10 }}>Adopt a Spot</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#4CC075',
+              borderRadius: 22,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              marginLeft: 10,
+            }}
+            onPress={() => router.push('/myreports')}
+          >
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>My Reports</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#4CC075',
+              borderRadius: 22,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+            }}
+            onPress={() => router.push('/alldumps')}
+          >
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Show All Dumps</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      {/* Map covers the full screen */}
+      <View style={{ flex: 1 }}>
         <MapViewComponent dumps={dumps} />
       </View>
-      {/* Reported Dumps Section with retractable animation */}
-      <Animated.View
-        style={[
-          styles.section,
-          {
-            opacity: animValue,
-            transform: [{ scale: animValue }],
-            position: 'absolute',
-            left: 16,
-            right: 16,
-            bottom: 90 + 64 + 16, // 90 (FAB bottom) + 64 (FAB height) + 16 (gap)
-            zIndex: 20,
-            height: 220, // Fixed height for the section
-          },
-        ]}
-        pointerEvents={dumpsExpanded ? 'auto' : 'none'}
-      >
-        <TouchableOpacity style={styles.sectionCloseBtn} onPress={toggleDumpsSection}>
-          <MaterialIcons name="close" size={28} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.sectionTitle}>Reported Dumps</Text>
-        <View style={{ paddingBottom: 120 }}>
-          {userId !== null && dumps.filter(dump => dump.userId === userId).length === 0 && <Text style={{ color: '#888', textAlign: 'center', marginTop: 10 }}>No dumps reported yet.</Text>}
-          {userId !== null && dumps.filter(dump => dump.userId === userId).map(dump => (
-            <View key={dump.id} style={styles.dumpCard}>
-              <TouchableOpacity onPress={() => { setModalDump(dump); setShowModal(true); }}>
-                <Image source={{ uri: dump.photoUrl }} style={styles.dumpImage} />
-              </TouchableOpacity>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.dumpDesc}>{dump.description}</Text>
-                <Text style={styles.dumpStatus}>{dump.reportType}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </Animated.View>
-      {/* Show/Expand Button - always visible, animates in/out */}
-      <Animated.View
-        style={[
-          styles.fabShowDumps,
-          {
-            left: 28,
-            bottom: 90,
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            opacity: animValue.interpolate({ inputRange: [0, 0.01, 1], outputRange: [1, 0, 0] }),
-            transform: [{ scale: animValue.interpolate({ inputRange: [0, 1], outputRange: [1, 0.7] }) }],
-            zIndex: 30,
-            position: 'absolute',
-            // display: dumpsExpanded ? 'none' : 'flex',
-          },
-        ]}
-        pointerEvents={dumpsExpanded ? 'none' : 'auto'}
-      >
-        <TouchableOpacity style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} onPress={toggleDumpsSection}>
-          <MaterialIcons name="list" size={32} color="#fff" />
-        </TouchableOpacity>
-      </Animated.View>
+      {/* Remove reported dumps box and toggle button */}
       {/* Dump Detail Modal */}
       <Modal visible={!!modalDump} transparent animationType="slide" onRequestClose={handleCloseModal}>
         {modalDump && (

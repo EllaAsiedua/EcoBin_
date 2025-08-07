@@ -25,9 +25,7 @@ public class SecurityConfig {
                         "/api/auth/**",
                         "/api/dumps/report/image",
                         "/api/dumps/reports",
-                        "/api/search/**",
-                        "/api/leaderboard",
-                        "/api/leaderboard/test"
+                        "/api/search/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

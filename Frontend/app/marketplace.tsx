@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 
 // Mock data for marketplace items
 const items = [
@@ -36,6 +37,7 @@ const categories = ['All', 'Upcycling', 'Recycling'];
 
 export default function MarketplaceScreen() {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const router = useRouter();
 
   const filteredItems = selectedCategory === 'All'
     ? items
@@ -77,8 +79,11 @@ export default function MarketplaceScreen() {
                   </View>
                 </View>
               </View>
-              <TouchableOpacity style={styles.msgBtn}>
-                <Text style={styles.msgText}>💬</Text>
+              <TouchableOpacity
+                style={styles.msgBtn}
+                onPress={() => router.push({ pathname: '/buychat', params: { title: item.title, artisan: item.artisan.name } })}
+              >
+                <Text style={[styles.msgText, { color: '#4CC075', fontWeight: 'bold' }]}>Buy</Text>
               </TouchableOpacity>
             </View>
           )}

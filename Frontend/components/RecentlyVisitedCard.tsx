@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Avatar, IconButton } from 'react-native-paper';
 
@@ -9,6 +9,12 @@ const recent = [
 ];
 
 export default function RecentlyVisitedCard() {
+  const [starred, setStarred] = useState<{ [id: string]: boolean }>({});
+
+  const toggleStar = (id: string) => {
+    setStarred(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <Card style={styles.card}>
       <View style={styles.headerRow}>
@@ -24,7 +30,13 @@ export default function RecentlyVisitedCard() {
               <Text style={styles.subtitle}>{item.subtitle}</Text>
             </View>
             <View style={styles.dot} />
-            <IconButton icon="star-outline" size={22} style={styles.starBtn} />
+            <IconButton
+              icon={starred[item.id] ? 'star' : 'star-outline'}
+              size={22}
+              style={styles.starBtn}
+              onPress={() => toggleStar(item.id)}
+              iconColor={starred[item.id] ? '#FFD600' : undefined}
+            />
           </TouchableOpacity>
         ))}
       </View>

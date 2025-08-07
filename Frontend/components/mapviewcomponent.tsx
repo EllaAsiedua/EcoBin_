@@ -2,6 +2,7 @@ import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function MapViewComponent({ dumps = [] }) {
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -49,8 +50,9 @@ export default function MapViewComponent({ dumps = [] }) {
           coordinate={{ latitude: dump.latitude, longitude: dump.longitude }}
           title={dump.description}
           description={dump.reportType}
-          // Optionally add image or custom marker
-        />
+        >
+          <MaterialCommunityIcons name="trash-can" size={32} color="#e74c3c" />
+        </Marker>
       ))}
       {location && (
         <Marker
